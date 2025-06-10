@@ -2,11 +2,12 @@
 -- ArduPlane 4.6:
 --  • se geofence breach, RC loss >5s o GCS loss >10s → DISARM + superfici a full deflection
 
--- Ottengo gli handle ai canali RC (1=roll, 2=pitch, 3=throttle, 4=yaw)
-local chan_roll     = rc:get_channel(1)   -- aileron
-local chan_pitch    = rc:get_channel(2)   -- elevator
-local chan_throttle = rc:get_channel(3)   -- throttle
-local chan_yaw      = rc:get_channel(4)   -- rudder
+-- Ottengo i canali associati alle funzioni servo
+local chan_throttle       = tonumber(SRV_Channels:find_channel(70)) or error("throttle not found", 0)
+local chan_vtail_left     = tonumber(SRV_Channels:find_channel(79)) or error("vtail_left not found", 0)
+local chan_vtail_right    = tonumber(SRV_Channels:find_channel(80)) or error("vtail_right not found", 0)
+local chan_flaperon_left  = tonumber(SRV_Channels:find_channel(24)) or error("flaperon_left not found", 0)
+local chan_flaperon_right = tonumber(SRV_Channels:find_channel(25)) or error("flaperon_right not found", 0)
 
 -- Variabili per lo stato dei failsafe
 local rc_lost_time = nil
@@ -16,23 +17,23 @@ local reason = "Unknown error"
 local FTS_channel = 5
 
 -- Funzione che disarma e imposta le superfici a full deflection
-local function do_disarm_full()
+local function activate_FTS()
   gcs:send_text(0, "FTS: " .. reason .. " → FULL DEFLECTION + DISARM")
 
   -- Modalità Manual (0) prima del disarmo
   vehicle:set_mode(0)
 
   -- Imposta override PRIMA del disarmo
-  SRV_Channels:set_output_pwm_chan_timeout(3, 1100, 2000)  -- throttle
-  SRV_Channels:set_output_pwm_chan_timeout(2, 2000, 2000)  -- vtail left
-  SRV_Channels:set_output_pwm_chan_timeout(1, 2000, 2000)  -- flaperon left
-  SRV_Channels:set_output_pwm_chan_timeout(4, 2000, 2000)  -- vtail right
-  SRV_Channels:set_output_pwm_chan_timeout(5, 1100, 2000)  -- flaperon right
+  SRV_Channels:set_output_pwm_chan_timeout(chan_throttle, 1100, 2000)       -- throttle
+  SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_left, 2000, 2000)     -- vtail left
+  SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_right, 2000, 2000)    -- vtail right
+  SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_left, 2000, 2000)  -- flaperon left
+  SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_right, 1100, 2000) -- flaperon right
 
   -- Ora disarmo
   arming:disarm()
 
-  return do_disarm_full, 1000
+  return activate_FTS, 1000
 end
 
 -- Converte in stringa il bitmask di breach (senza usare 'bit')
@@ -64,7 +65,7 @@ local function update()
   local channel_value = tonumber(rc:get_pwm(FTS_channel)) or 0
   if channel_value > 3000 then
     reason = "Manual activation"
-    return do_disarm_full()
+    return activate_FTS()
   end
 
   -- 2) Geofence breach
@@ -79,7 +80,7 @@ local function update()
       elapsed
     ))
     reason = "Geofence breach"
-    return do_disarm_full()
+    return activate_FTS()
   end
 
   -- 3) RC failsafe: segnale RC assente > 5000 ms
@@ -88,7 +89,7 @@ local function update()
       rc_lost_time = now
     elseif ((now - rc_lost_time) > 5000) then
       reason = "RC signal lost >5s"
-      return do_disarm_full()
+      return activate_FTS()
     end
   else
     -- RC presente → resetto timer
@@ -99,7 +100,7 @@ local function update()
   local last_gcs = tonumber(gcs:last_seen()) or 0
   if (now - last_gcs) > 10000 then
     reason = "GCS link lost >10s"
-    return do_disarm_full()
+    return activate_FTS()
   end
 
   return update, 1000
