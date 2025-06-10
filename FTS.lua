@@ -15,6 +15,7 @@ local reason = "Unknown error"
 
 -- Canale per attivazione manuale
 local FTS_channel = 5
+local FTS_channel_threshold = 3000
 
 -- Funzione che disarma e imposta le superfici a full deflection
 local function activate_FTS()
@@ -63,7 +64,7 @@ local function update()
 
   -- 1) Attivazione manuale
   local channel_value = tonumber(rc:get_pwm(FTS_channel)) or 0
-  if channel_value > 3000 then
+  if channel_value > FTS_channel_threshold then
     reason = "Manual activation"
     return activate_FTS()
   end
