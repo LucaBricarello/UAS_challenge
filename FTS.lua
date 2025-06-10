@@ -24,11 +24,11 @@ local function activate_FTS()
   vehicle:set_mode(0)
 
   -- Imposta override PRIMA del disarmo
-  SRV_Channels:set_output_pwm_chan_timeout(chan_throttle, 1100, 2000)       -- throttle
-  SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_left, 2000, 2000)     -- vtail left
-  SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_right, 2000, 2000)    -- vtail right
-  SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_left, 2000, 2000)  -- flaperon left
-  SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_right, 1100, 2000) -- flaperon right
+  SRV_Channels:set_output_pwm_chan_timeout(chan_throttle, 1100, 5000)       -- throttle
+  SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_left, 2000, 5000)     -- vtail left
+  SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_right, 2000, 5000)    -- vtail right
+  SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_left, 2000, 5000)  -- flaperon left
+  SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_right, 1100, 5000) -- flaperon right
 
   -- Ora disarmo
   arming:disarm()
