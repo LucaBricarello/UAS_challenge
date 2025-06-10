@@ -20,18 +20,18 @@ local FTS_channel = 5
 local function activate_FTS()
   gcs:send_text(0, "FTS: " .. reason .. " → FULL DEFLECTION + DISARM")
 
-  -- Modalità Manual (0) prima del disarmo
+  -- Modalità Manual (0)
   vehicle:set_mode(0)
 
-  -- Imposta override PRIMA del disarmo
+  -- Attivo Motor Emergency Stop
+  rc:run_aux_function(31, '2')
+
+  -- Imposta override
   SRV_Channels:set_output_pwm_chan_timeout(chan_throttle, 1100, 5000)       -- throttle
   SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_left, 2000, 5000)     -- vtail left
   SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_right, 2000, 5000)    -- vtail right
   SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_left, 2000, 5000)  -- flaperon left
   SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_right, 1100, 5000) -- flaperon right
-
-  -- Ora disarmo
-  arming:disarm()
 
   return activate_FTS, 1000
 end
