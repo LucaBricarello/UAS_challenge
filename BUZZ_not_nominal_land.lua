@@ -1,32 +1,33 @@
 local LANDING_RADIUS = 100 -- metri
 local has_beeped = false
 
--- Recupera le ultime coordinate della missione
-local function get_landing_point()
+local function get_mission_location(index)
 
-  local num = mission:num_commands()
-  if not num or num <= 0 then
-    gcs:send_text(3, "Errore: missione vuota")
-    error("Errore: missione vuota", 0)
-  end
-
-  local cmd = mission:get_item(num - 1)
+  local cmd = mission:get_item(index)
   if not cmd then
-    gcs:send_text(3, "Errore: comando missione finale non trovato")
-    error("Errore: comando missione finale non trovato", 0)
+    gcs:send_text(3, "Errore: comando missione non trovato")
+    error("Errore: comando missione non trovato", 0)
   end
 
-  local landing_center = Location()
-  landing_center:lat(cmd:x()) -- lat in 1e7
-  landing_center:lng(cmd:y()) -- lon in 1e7
-  landing_center:alt(cmd:z()) -- alt in cm (circa)
-  gcs:send_text(6, string.format("Landing WP: lat=%.6f, lon=%.6f",
-    cmd:x() / 1e7, cmd:y() / 1e7))
-  return landing_center
+  local loc = Location()
+  loc:lat(cmd:x()) -- lat in 1e7
+  loc:lng(cmd:y()) -- lon in 1e7
+  loc:alt(cmd:z()) -- alt in cm (circa)
+  return loc
 
 end
 
-local landing_center = get_landing_point()
+-- Recupera le ultime coordinate della missione
+local num_commands = mission:num_commands()
+if not num_commands or num_commands <= 0 then
+  gcs:send_text(3, "Errore: missione vuota")
+  error("Errore: missione vuota", 0)
+end
+
+local landing_center = get_mission_location(num_commands - 1)
+
+gcs:send_text(6, string.format("Landing WP: lat=%.6f, lon=%.6f",
+  landing_center:lat() / 1e7, landing_center:lng() / 1e7))
 
 local function update()
 
