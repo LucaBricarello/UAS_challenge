@@ -50,7 +50,7 @@ local function update()
         gcs:send_text(1, string.format(
           "⚠️ Landing fuori zona (%.1f m)!", landing_dist
         ))
-        notify:play_tune("MFT240L8 O4aO5dc O4aO5dc O4aO5dc O4aO5dc")
+        notify:play_tune("MFT240L8 L16dcdcdcdc L16dcdcdcdc L16dcdcdcdc L16dcdcdcdc")
         return update, 4000
       end
 
