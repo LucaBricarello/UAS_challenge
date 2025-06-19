@@ -31,7 +31,7 @@ gcs:send_text(7, string.format("Landing WP: lat=%.6f, lon=%.6f", landing_center:
 
 local function update()
 
-  if vehicle:get_likely_flying() == false then
+  if not vehicle:get_likely_flying() then
 
     local now = tonumber(millis()) or 0
 
