@@ -15,8 +15,10 @@ local reason = "Unknown error"
 local GCS_lost = false
 
 -- Canale per attivazione manuale
-local FTS_channel = 5
-local FTS_channel_threshold = 3000
+local FTS_channel = 12
+local FTS_channel_threshold = 1500
+
+gcs:send_text(6, "FTS activated")
 
 -- Funzione che disarma e imposta le superfici a full deflection
 local function activate_FTS()
