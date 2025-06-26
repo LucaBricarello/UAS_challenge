@@ -12,6 +12,7 @@ local chan_flaperon_right = tonumber(SRV_Channels:find_channel(25)) or error("fl
 -- Variabili per lo stato dei failsafe
 local rc_lost_time = nil
 local reason = "Unknown error"
+local GCS_lost = false
 
 -- Canale per attivazione manuale
 local FTS_channel = 5
@@ -58,6 +59,17 @@ local function get_breach_names(breaches)
   return table.concat(names, " & ")
 end
 
+-- Funzione che attiva il loiter in caso di GCS failsafe
+local function GCS_failsafe()
+  gcs:send_text(1, "FAILSAFE: GCS link lost >10s → LOITER MODE")
+  GCS_lost = true
+
+  -- Se non manuale passa a loiter (12)
+  if vehicle:get_mode() ~= 0 then
+    vehicle:set_mode(12)
+  end
+end
+
 -- Ciclo principale: controlla ogni 1000 ms geofence, RC loss e GCS loss
 local function update()
   local now = tonumber(millis()) or 0
@@ -99,9 +111,8 @@ local function update()
 
   -- 4) GCS failsafe: assenza di heartbeat > 10000 ms
   local last_gcs = tonumber(gcs:last_seen()) or 0
-  if (now - last_gcs) > 10000 then
-    reason = "GCS link lost >10s"
-    return activate_FTS()
+  if (now - last_gcs) > 10000 or GCS_lost then
+    GCS_failsafe()
   end
 
   return update, 1000
