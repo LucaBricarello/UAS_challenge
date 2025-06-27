@@ -33,9 +33,9 @@ local function activate_FTS()
   -- Imposta override
   SRV_Channels:set_output_pwm_chan_timeout(chan_throttle, 1100, 5000)       -- throttle
   SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_left, 2000, 5000)     -- vtail left
-  SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_right, 2000, 5000)    -- vtail right
+  SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_right, 1500, 5000)    -- vtail right
   SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_left, 2000, 5000)  -- flaperon left
-  SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_right, 1100, 5000) -- flaperon right
+  SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_right, 2000, 5000) -- flaperon right
 
   return activate_FTS, 1000
 end
@@ -63,7 +63,6 @@ end
 
 -- Funzione che attiva il loiter in caso di GCS failsafe
 local function GCS_failsafe()
-  gcs:send_text(1, "FAILSAFE: GCS link lost >10s → LOITER MODE")
   GCS_lost = true
 
   -- Se non manuale passa a loiter (12)
@@ -74,7 +73,7 @@ end
 
 -- Ciclo principale: controlla ogni 1000 ms geofence, RC loss e GCS loss
 local function update()
-  local now = tonumber(millis()) or 0
+  local now = millis()
 
   -- 1) Attivazione manuale
   local channel_value = tonumber(rc:get_pwm(FTS_channel)) or 0
@@ -84,9 +83,9 @@ local function update()
   end
 
   -- 2) Geofence breach
-  local breaches = tonumber(fence:get_breaches()) or 0
+  local breaches = fence:get_breaches()
   if breaches ~= 0 then
-    local btime   = tonumber(fence:get_breach_time()) or 0
+    local btime   = fence:get_breach_time()
     local names   = get_breach_names(breaches)
     local elapsed = (now - btime) / 1000.0
     gcs:send_text(0, string.format(
@@ -112,8 +111,11 @@ local function update()
   end
 
   -- 4) GCS failsafe: assenza di heartbeat > 10000 ms
-  local last_gcs = tonumber(gcs:last_seen()) or 0
+  local last_gcs = gcs:last_seen()
   if (now - last_gcs) > 10000 or GCS_lost then
+    if not GCS_lost then
+      gcs:send_text(1, "FAILSAFE: GCS link lost >10s → LOITER MODE")
+    end
     GCS_failsafe()
   end
 
