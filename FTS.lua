@@ -99,7 +99,7 @@ local function update()
   end
 
   -- 3) RC failsafe: segnale RC assente > 5000 ms
-  if rc:has_valid_input() == false then
+  if not rc:has_valid_input() then
     if rc_lost_time == nil then
       rc_lost_time = now
     elseif ((now - rc_lost_time) > 5000) then
