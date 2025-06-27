@@ -33,7 +33,7 @@ local function update()
 
   if not vehicle:get_likely_flying() then
 
-    local now = tonumber(millis()) or 0
+    local now = millis()
 
     if on_land_time == nil then
       on_land_time = now
