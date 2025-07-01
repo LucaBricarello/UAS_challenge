@@ -122,6 +122,9 @@ update = function()
     GCS_failsafe()
   end
 
+  -- Disabilito Motor Emergency Stop
+  rc:run_aux_function(31, '0')
+
   return update, 1000
 end
 
