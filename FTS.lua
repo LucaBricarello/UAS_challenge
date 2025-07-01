@@ -18,6 +18,9 @@ local GCS_lost = false
 local FTS_channel = 12
 local FTS_channel_threshold = 1500
 
+-- Forward declaration
+local update
+
 gcs:send_text(6, "FTS activated")
 
 -- Funzione che disarma e imposta le superfici a full deflection
@@ -31,13 +34,13 @@ local function activate_FTS()
   rc:run_aux_function(31, '2')
 
   -- Imposta override
-  SRV_Channels:set_output_pwm_chan_timeout(chan_throttle, 1100, 5000)       -- throttle
-  SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_left, 2000, 5000)     -- vtail left
-  SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_right, 1500, 5000)    -- vtail right
-  SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_left, 2000, 5000)  -- flaperon left
-  SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_right, 2000, 5000) -- flaperon right
+  SRV_Channels:set_output_pwm_chan_timeout(chan_throttle, 1100, 2000)       -- throttle
+  SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_left, 2000, 2000)     -- vtail left
+  SRV_Channels:set_output_pwm_chan_timeout(chan_vtail_right, 1500, 2000)    -- vtail right
+  SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_left, 2000, 2000)  -- flaperon left
+  SRV_Channels:set_output_pwm_chan_timeout(chan_flaperon_right, 2000, 2000) -- flaperon right
 
-  return activate_FTS, 1000
+  return update, 1000
 end
 
 -- Converte in stringa il bitmask di breach (senza usare 'bit')
@@ -72,7 +75,7 @@ local function GCS_failsafe()
 end
 
 -- Ciclo principale: controlla ogni 1000 ms geofence, RC loss e GCS loss
-local function update()
+update = function()
   local now = millis()
 
   -- 1) Attivazione manuale
